@@ -173,21 +173,30 @@ SPLIT_AXIS_VALUES = {
     'Z': 2
 }
 
+def write_bsp_tree_node_data(data, offset, leftIndex, rightIndex, splitAxis, segmentNumber, splitValue):
+    write16(data, offset + 0, leftIndex)
+    write16(data, offset + 2, rightIndex)
+    write8(data, offset + 4, SPLIT_AXIS_VALUES[splitAxis])
+    write8(data, offset + 5, segmentNumber)
+    write16(data, offset + 6, splitValue)
+
 def write_bsp_tree_node(data, index, node):
     if index == -1 or node == None:
         return
     offset = index * SIZE_OF_BSP_TREE_NODE
-    write16(data, offset + 0, node.leftIndex)
-    write16(data, offset + 2, node.rightIndex)
-    write8(data, offset + 4, SPLIT_AXIS_VALUES[node.splitAxis])
-    write8(data, offset + 5, node.segmentNumber)
-    write16(data, offset + 6, node.splitValue)
+    write_bsp_tree_node_data(data, offset, node.leftIndex, node.rightIndex, node.splitAxis, node.segmentNumber, node.splitValue)
     write_bsp_tree_node(data, node.leftIndex, node.left)
     write_bsp_tree_node(data, node.rightIndex, node.right)
 
 def get_bsp_tree_data(model):
-    out = [0] * align16((len(model.segments) - 1) * SIZE_OF_BSP_TREE_NODE)
-    write_bsp_tree_node(out, 0, model.bspTree.rootNode)
+    numSegments = len(model.segments)
+    if numSegments == 1 or model.bspTree.rootNode == None:
+        # Write a single blank node.
+        out = [0] * align16(SIZE_OF_BSP_TREE_NODE)
+        write_bsp_tree_node_data(out, 0, -1, -1, 'X', 0, 0)
+    else:
+        out = [0] * align16((numSegments - 1) * SIZE_OF_BSP_TREE_NODE)
+        write_bsp_tree_node(out, 0, model.bspTree.rootNode)
     return out
 
 def write_bitfield(data, offset, numBytes, val):
@@ -197,6 +206,13 @@ def write_bitfield(data, offset, numBytes, val):
 
 def get_bitfields_data(model):
     numSegments = len(model.segments)
+
+    # Write a single blank node.
+    if numSegments == 1 or model.bspTree.rootNode == None:
+        out = [0] * 16
+        out[0] = 1
+        return out
+
     numBytesPerSegment = math.ceil(numSegments / 8)
     out = [0] * align16(numBytesPerSegment * numSegments)
 
