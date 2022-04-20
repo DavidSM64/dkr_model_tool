@@ -1,7 +1,7 @@
 from xml.dom.expatbuilder import parseString
 from util import *
 
-MAX_NUM_VERTS_PER_BATCH = 32
+MAX_NUM_VERTS_PER_BATCH = 24
 MAX_NUM_TRIS_PER_BATCH = 16
 
 class UV:
@@ -161,6 +161,9 @@ class Vertex:
             return False
         return self.x == other.x and self.y == other.y and self.z == other.z
 
+    def __repr__(self):
+        return '(' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')'
+
 # Currently known triangle flags
 TRIANGLE_FLAG_RENDER_BACKFACE = 0x40
 
@@ -194,72 +197,57 @@ class Model3DSegment:
         self.vertices = []
         self.triangles = []
 
-    # Should only be called internally.
-    def _add_vertices(self, curBatchIndex, texIndex, flags, vert0, vert1, vert2):
-        indices = [-1, -1, -1]
-        numberOfNewVerts = 3
-        startIndex = self.batches[curBatchIndex].vertOffset
-        endIndex = startIndex + self.batches[curBatchIndex].numVertices
-
-        # First check if vertices already exists in current batch
-        localVertIndex = 0
-        for i in range(startIndex, endIndex):
-            if indices[0] == -1 and self.vertices[i] == vert0:
-                indices[0] = localVertIndex
-                numberOfNewVerts -= 1
-            if indices[1] == -1 and self.vertices[i] == vert1:
-                indices[1] = localVertIndex
-                numberOfNewVerts -= 1
-            if indices[2] == -1 and self.vertices[i] == vert2:
-                indices[2] = localVertIndex
-                numberOfNewVerts -= 1
-            localVertIndex += 1
-
-        # Batches can only have up to 32 vertices, so we need to check for that.
-        if self.batches[curBatchIndex].numVertices + numberOfNewVerts > 32:
-            self._new_batch(curBatchIndex, texIndex, flags)
-            curBatchIndex += 1
-
-        # Add vertices to batch if they we're not already.
-        if indices[0] == -1:
-            self.vertices.append(vert0)
-            indices[0] = self.batches[curBatchIndex].numVertices
-            self.batches[curBatchIndex].numVertices += 1
-        if indices[1] == -1:
-            self.vertices.append(vert1)
-            indices[1] = self.batches[curBatchIndex].numVertices
-            self.batches[curBatchIndex].numVertices += 1
-        if indices[2] == -1:
-            self.vertices.append(vert2)
-            indices[2] = self.batches[curBatchIndex].numVertices
-            self.batches[curBatchIndex].numVertices += 1
-        return (indices, curBatchIndex)
-
-    # Should only be called internally.
-    def _new_batch(self, curBatchIndex, texIndex, flags):
-        newBatch = Model3DBatch(texIndex, flags)
-        newBatch.vertOffset = self.batches[curBatchIndex].vertOffset + self.batches[curBatchIndex].numVertices
-        newBatch.triOffset = self.batches[curBatchIndex].triOffset + self.batches[curBatchIndex].numTriangles
+    def _new_batch(self, texIndex=-1, batchFlags=0):
+        newBatch = Model3DBatch(texIndex, batchFlags)
+        if len(self.batches) > 0:
+            prevBatch = self.batches[-1]
+            newBatch.vertOffset = prevBatch.vertOffset + prevBatch.numVertices
+            newBatch.triOffset = prevBatch.triOffset + prevBatch.numTriangles
         self.batches.append(newBatch)
 
-    def add_triangle(self, texIndex, batchFlags, flags, vert0, vert1, vert2, uv0, uv1, uv2):
-        curBatchIndex = len(self.batches) - 1
-        # Check if there are no batches, and create the first one if so.
-        if curBatchIndex == -1: 
-            self.batches.append(Model3DBatch(texIndex, batchFlags))
-            curBatchIndex += 1
-        # Check if the texture or flags have changed. If so, then create a new batch.
-        elif texIndex != self.batches[curBatchIndex].texIndex or batchFlags != self.batches[curBatchIndex].flags:
-            self._new_batch(curBatchIndex, texIndex, batchFlags)
-            curBatchIndex += 1
-        indices,curBatchIndex = self._add_vertices(curBatchIndex, texIndex, batchFlags, vert0, vert1, vert2)
-        self.triangles.append(Triangle(flags, indices[0], indices[1], indices[2], uv0, uv1, uv2))
-        self.batches[curBatchIndex].numTriangles += 1
-        # Batches can only have up to 16 triangles, so create a new one if we've reached the limit.
-        if self.batches[curBatchIndex].numTriangles >= 16:
-            self._new_batch(curBatchIndex, texIndex, batchFlags)
-            curBatchIndex += 1
+    def _check_batch_for_vertex_index(self, vertex):
+        batch = self.batches[-1]
+        if batch.numVertices == 0:
+            return -1
 
+        for i in range(0, batch.numVertices):
+            if self.vertices[batch.vertOffset + i] == vertex:
+                return i
+
+        return -1
+
+    def _add_vertices_to_batch(self, texIndex, batchFlags, verts):
+        numberOfNewVertices = 3
+        vertIndices = [-1, -1, -1]
+
+        for i in range(0, 3):
+            vertIndices[i] = self._check_batch_for_vertex_index(verts[i])
+            if vertIndices[i] > -1:
+                numberOfNewVertices -= 1
+
+        if self.batches[-1].numVertices + numberOfNewVertices > MAX_NUM_VERTS_PER_BATCH:
+            self._new_batch(texIndex, batchFlags)
+            vertIndices = [-1, -1, -1] # reset indices
+
+        for i in range(0, 3):
+            if vertIndices[i] == -1:
+                vertIndices[i] = len(self.vertices) - self.batches[-1].vertOffset
+                self.vertices.append(verts[i])
+                self.batches[-1].numVertices += 1
+
+        return vertIndices
+
+    def _check_if_texindex_or_flags_changed(self, texIndex, batchFlags):
+        curBatch = self.batches[-1]
+        return curBatch.texIndex != texIndex or curBatch.flags != batchFlags
+
+    def add_triangle(self, texIndex, batchFlags, flags, vert0, vert1, vert2, uv0, uv1, uv2):
+        if len(self.batches) == 0 or self._check_if_texindex_or_flags_changed(texIndex, batchFlags) or self.batches[-1].numTriangles == MAX_NUM_TRIS_PER_BATCH:
+            self._new_batch(texIndex, batchFlags)
+        indices = self._add_vertices_to_batch(texIndex, batchFlags, [vert0, vert1, vert2])
+        self.triangles.append(Triangle(flags, indices[0], indices[1], indices[2], uv0, uv1, uv2))
+        self.batches[-1].numTriangles += 1
+        
     def get_texture_index_from_triangle_index(self, triIndex):
         for b in self.batches:
             if triIndex >= b.triOffset and triIndex < b.triOffset + b.numTriangles:
