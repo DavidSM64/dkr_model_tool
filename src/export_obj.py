@@ -12,7 +12,7 @@ def export_obj_model(model, outname):
 
     objName = outname[:-4]
     if '/' in objName:
-        objName = objName[objName.index('/')+1:]
+        objName = objName[objName.rindex('/')+1:]
 
     objTxt = 'o ' + objName + '\n\n'
     objTxt += export_geometry_with_materials(model, objName, outname[:-(len(objName)+4)], outname[:-4]+".mtl", True)
@@ -36,8 +36,8 @@ def export_geometry_with_materials(model, objName, basePath, mtlPath, exportColo
     texIndex = 0
     for texture in model.textures:
         mtlTxt += 'newmtl ' + texture.name + '\n'
-        mtlPngPath = basePath + "/" + objName + "/" + texture.name + '.png'
-        texture.tex.save(mtlPngPath)
+        mtlPngPath = objName + "/" + texture.name + '.png'
+        texture.tex.save(basePath + "/" + mtlPngPath)
         if mtlPngPath.startswith("./"):
             mtlPngPath = mtlPngPath[2:]
         if texture.originalTexIndex != -1:
@@ -49,16 +49,26 @@ def export_geometry_with_materials(model, objName, basePath, mtlPath, exportColo
 
     open(mtlPath, 'w').write(mtlTxt)
 
-    objTxt = 'mtllib ' + mtlPath + '\n\n'
+    objTxt = 'mtllib ' + objName + '.mtl\n\n'
 
-    objTxt += special_cmd('number_of_segments', len(model.segments))
-    objTxt += special_cmd('bsp_tree_start')
-    bspTextRef = ['']
-    write_bsp_tree_node(bspTextRef, model.bspTree.rootNode)
-    objTxt += bspTextRef[0]
-    objTxt += special_cmd('bsp_tree_end')
-    for i in range(0, len(model.segments)):
-        objTxt += special_cmd('segment_mask', hex(model.bspTree.bitfields[i]))
+    numSegments = len(model.segments)
+
+    objTxt += special_cmd('number_of_segments', numSegments)
+
+    if numSegments > 1:
+        objTxt += special_cmd('bsp_tree_start')
+        bspTextRef = ['']
+        write_bsp_tree_node(bspTextRef, model.bspTree.rootNode)
+        objTxt += bspTextRef[0]
+        objTxt += special_cmd('bsp_tree_end')
+        for i in range(0, len(model.segments)):
+            objTxt += special_cmd('segment_mask', hex(model.bspTree.bitfields[i]))
+    else:
+        # Write blank bsp tree and segment mask.
+        objTxt += special_cmd('bsp_tree_start')
+        objTxt += special_cmd('bsp_tree_node', '-1 -1 X 0 0')
+        objTxt += special_cmd('bsp_tree_end')
+        objTxt += special_cmd('segment_mask', 1)
 
     objTxt += '\n'
 

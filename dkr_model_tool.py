@@ -5,7 +5,7 @@ sys.path.insert(0,'src')
 from import_obj import import_obj_model
 from export_obj import export_obj_model
 from import_dkr_binary import import_dkr_level_binary
-from export_dkr_binary import export_dkr_level_binary
+from export_dkr_level_binary import export_dkr_level_binary
 from preview import preview_level
 sys.path.insert(0,'..')
 

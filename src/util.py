@@ -23,6 +23,9 @@ TEX_FORMAT_IA4    = 6
 TEX_FORMAT_CI4    = 7
 TEX_FORMAT_CI8    = 8
 
+def align8(val):
+    return int(val + 7) & 0xFFFFFFF8
+
 def align16(val):
     return int(val + 15) & 0xFFFFFFF0
 
@@ -84,7 +87,6 @@ def get_decomp_path():
     global displayedDecompFileError
     try:
         decompPath = open(PATH_TO_DECOMP_FILE, 'r').read()
-        print(decompPath)
         if len(decompPath) > 0:
             return decompPath
     except:

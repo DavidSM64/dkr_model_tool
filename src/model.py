@@ -319,8 +319,8 @@ class Model3DSegment:
 
         return tuple(outIndices)
     def get_bounding_box(self):
-        maxPos = [0, 0, 0]
-        minPos = [0, 0, 0]
+        maxPos = [-999999, -999999, -999999]
+        minPos = [999999, 999999, 999999]
 
         for vert in self.vertices:
             minPos[0] = min(minPos[0], vert.x)
@@ -373,7 +373,5 @@ class Model3D:
         self.textures = []
         self.hasTrianglesWithoutATexture = False
         self.bspTree = BspTree()
-    
-    def calculate_edge_midpoints(self):
-        return
+
 

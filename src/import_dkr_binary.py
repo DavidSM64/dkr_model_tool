@@ -106,8 +106,9 @@ def import_dkr_level_binary(binaryPath):
                     segment.triangles[batchTriIndex + k].uv2.parse_uv(texWidth, texHeight)
             segment.batches.append(Model3DBatch(texIndex, batchFlags, batchVertIndex, batchNumVerts, batchTriIndex, batchNumTris))
         model.segments.append(segment)
-    numBytesForBitfield = math.ceil(numSegments / 8)
-    for i in range(0, numSegments):
-        model.bspTree.bitfields.append(get_bitfield(data, bitfieldsOffset + (i * numBytesForBitfield), numBytesForBitfield))
-    model.bspTree.rootNode = parse_bsp_tree(data, bspTreeOffset, 0)
+    if numSegments > 1:
+        numBytesForBitfield = math.ceil(numSegments / 8)
+        for i in range(0, numSegments):
+            model.bspTree.bitfields.append(get_bitfield(data, bitfieldsOffset + (i * numBytesForBitfield), numBytesForBitfield))
+        model.bspTree.rootNode = parse_bsp_tree(data, bspTreeOffset, 0)
     return model
