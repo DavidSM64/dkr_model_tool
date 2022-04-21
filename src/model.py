@@ -143,6 +143,7 @@ class VertexColor:
 class Vertex:
     def __init__(self, x, y, z, r=255, g=255, b=255, a=255):
         # Position coordinates are signed 16-bit values
+        print("Visual vertex X: " + str(x) + ", Y: "+ str(y) + ", Z: "+ str(z))
         self.x = to_s16(x)
         self.y = to_s16(y)
         self.z = to_s16(z)
