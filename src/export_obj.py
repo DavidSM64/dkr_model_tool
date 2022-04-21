@@ -6,18 +6,18 @@ def special_cmd(cmd, value=None):
         return '#!dkr ' + cmd + '\n'
     return '#!dkr ' + cmd + ' ' + str(value) + '\n'
 
-def export_obj_model(model, outname):
-    if not outname.lower().endswith('.obj'):
-        outname += '.obj'
+def export_obj_model(model, args):
+    if not args.output.lower().endswith('.obj'):
+        args.output += '.obj'
 
-    objName = outname[:-4]
+    objName = args.output[:-4]
     if '/' in objName:
         objName = objName[objName.rindex('/')+1:]
 
     objTxt = 'o ' + objName + '\n\n'
-    objTxt += export_geometry_with_materials(model, objName, outname[:-(len(objName)+4)], outname[:-4]+".mtl", True)
+    objTxt += export_geometry_with_materials(model, objName, args.output[:-(len(objName)+4)], args.output[:-4]+".mtl", args.scale, True)
 
-    open(outname, 'w').write(objTxt)
+    open(args.output, 'w').write(objTxt)
 
 def write_bsp_tree_node(textRef, node):
     if node == None:
@@ -27,7 +27,7 @@ def write_bsp_tree_node(textRef, node):
     write_bsp_tree_node(textRef, node.left)
     write_bsp_tree_node(textRef, node.right)
 
-def export_geometry_with_materials(model, objName, basePath, mtlPath, exportColors=False):
+def export_geometry_with_materials(model, objName, basePath, mtlPath, scale, exportColors=False):
     if basePath == '':
         basePath = '.'
 
@@ -81,7 +81,7 @@ def export_geometry_with_materials(model, objName, basePath, mtlPath, exportColo
         objTxt += special_cmd('segment', segmentCount)
         for i in range(0, len(segment.vertices)):
             vert = segment.vertices[i]
-            objTxt += 'v ' + str(vert.x) + ' ' + str(vert.y) + ' ' + str(vert.z) + '\n'
+            objTxt += 'v ' + str(vert.x / scale) + ' ' + str(vert.y / scale) + ' ' + str(vert.z / scale) + '\n'
             if exportColors:
                 objTxt += special_cmd('vertex_color',  vert.color.as_hex_string())
         for i in range(0, len(segment.batches)):
@@ -97,9 +97,9 @@ def export_geometry_with_materials(model, objName, basePath, mtlPath, exportColo
                 objTxt += 'vt ' + str(tri.uv0.u) + ' ' + str(tri.uv0.v) + '\n'
                 objTxt += 'vt ' + str(tri.uv1.u) + ' ' + str(tri.uv1.v) + '\n'
                 objTxt += 'vt ' + str(tri.uv2.u) + ' ' + str(tri.uv2.v) + '\n'
-                fv0 = str(vertsStartIndex + tri.vi0 + 1) + '/' + str(uvIndex + 1)
-                fv1 = str(vertsStartIndex + tri.vi1 + 1) + '/' + str(uvIndex + 2)
-                fv2 = str(vertsStartIndex + tri.vi2 + 1) + '/' + str(uvIndex + 3)
+                fv0 = str(vertsStartIndex + (tri.vi0) + 1) + '/' + str(uvIndex + 1)
+                fv1 = str(vertsStartIndex + (tri.vi1) + 1) + '/' + str(uvIndex + 2)
+                fv2 = str(vertsStartIndex + (tri.vi2) + 1) + '/' + str(uvIndex + 3)
                 #print(str(i) + ',' + str(j) + ':' + str(fv0) + ' = ' + str(vertsStartIndex) + ' + ' + str(tri.vi0) + ' + 1')
                 objTxt += 'f ' + fv0 + ' ' + fv1 + ' ' + fv2 + '\n'
                 uvIndex += 3
@@ -109,7 +109,7 @@ def export_geometry_with_materials(model, objName, basePath, mtlPath, exportColo
             objTxt += '\n'
     return objTxt
 
-def export_geometry_only(model):
+def export_geometry_only(model, scale):
     objTxt = ''
     segmentCount = 0
     segmentVertOffset = 0
@@ -117,7 +117,7 @@ def export_geometry_only(model):
         objTxt += 'g segment_' + str(segmentCount) + '\n'
         for i in range(0, len(segment.vertices)):
             vert = segment.vertices[i]
-            objTxt += 'v ' + str(vert.x) + ' ' + str(vert.y) + ' ' + str(vert.z) + '\n'
+            objTxt += 'v ' + str(vert.x / scale) + ' ' + str(vert.y / scale) + ' ' + str(vert.z / scale) + '\n'
         for i in range(0, len(segment.batches)):
             bat = segment.batches[i]
             numTris = bat.numTriangles

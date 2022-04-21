@@ -73,10 +73,10 @@ def load_materials(basePath, matPath, model, matToTexIndex):
 DEFAULT_BATCH_FLAGS = 0x10
 DEFAULT_TRIANGLE_FLAGS = 0x00
 
-def import_obj_model(objPath):
+def import_obj_model(args):
     model = Model3D()
 
-    objText = open(objPath, "r").read().split("\n")
+    objText = open(args.input, "r").read().split("\n")
 
     # There is at-least a single segment
     model.segments.append(Model3DSegment())
@@ -116,7 +116,7 @@ def import_obj_model(objPath):
                             a = 255
                     except:
                         pass
-                vertices.append(Vertex(x, y, z, r, g, b, a))
+                vertices.append(Vertex(x * args.scale, y * args.scale, z * args.scale, r, g, b, a))
                 curVertexIndex += 1
             elif objCmd == 'vt':
                 uvs.append(UV(float(parts[1]), float(parts[2])))
@@ -153,8 +153,8 @@ def import_obj_model(objPath):
                 if loadedMaterials:
                     raise SystemExit("Error: A material library has already been defined for this obj file!")
                 basePath = '.'
-                if '/' in objPath:
-                    basePath = objPath[:objPath.rindex('/')]
+                if '/' in args.input:
+                    basePath = args.input[:args.input.rindex('/')]
                 load_materials(basePath, parts[1], model, matToTexIndex)
                 loadedMaterials = True
             elif objCmd == 'usemtl':
@@ -162,6 +162,8 @@ def import_obj_model(objPath):
             elif objCmd == 'o':
                 pass # Currently does nothing
             elif objCmd == 'g': 
+                pass # Currently does nothing
+            elif objCmd == 's': 
                 pass # Currently does nothing
             # Custom commands
             elif objCmd == 'vertex_color':

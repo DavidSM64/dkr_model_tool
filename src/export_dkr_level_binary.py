@@ -224,7 +224,7 @@ def get_bitfields_data(model):
 
     return out
 
-def export_dkr_level_binary(model, outPath):
+def export_dkr_level_binary(model, args):
     out = [0] * SIZE_OF_LEVEL_HEADER
 
     # Number of Textures
@@ -277,4 +277,4 @@ def export_dkr_level_binary(model, outPath):
     # Write size of file
     write32(out, 0x48, len(out))
 
-    open(outPath, 'wb').write(bytearray(out))
+    open(args.output, 'wb').write(bytearray(out))
