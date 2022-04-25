@@ -1,4 +1,4 @@
-from xml.dom.expatbuilder import parseString
+from numpy import array, dot
 from util import *
 
 MAX_NUM_VERTS_PER_BATCH = 24
@@ -196,6 +196,7 @@ class Model3DSegment:
         self.batches = []
         self.vertices = []
         self.triangles = []
+        self.bbox = None
 
     def _new_batch(self, texIndex=-1, batchFlags=0):
         newBatch = Model3DBatch(texIndex, batchFlags)
@@ -306,7 +307,11 @@ class Model3DSegment:
                 checkIndices[2] = False
 
         return tuple(outIndices)
+
     def get_bounding_box(self):
+        if self.bbox != None:
+            return self.bbox
+
         maxPos = [-999999, -999999, -999999]
         minPos = [999999, 999999, 999999]
 
@@ -318,7 +323,23 @@ class Model3DSegment:
             maxPos[1] = max(maxPos[1], vert.y)
             maxPos[2] = max(maxPos[2], vert.z)
 
-        return (minPos, maxPos)
+        self.bbox = (minPos, maxPos)
+
+        return self.bbox
+
+    def get_bounding_box_size(self):
+        bbox = self.get_bounding_box()
+        x = bbox[1][0] - bbox[0][0]
+        y = bbox[1][1] - bbox[0][1]
+        z = bbox[1][2] - bbox[0][2]
+        return (x, y, z)
+
+    def get_center(self):
+        bbox = self.get_bounding_box()
+        x = bbox[0][0] + ((bbox[1][0] - bbox[0][0]) // 2)
+        y = bbox[0][1] + ((bbox[1][1] - bbox[0][1]) // 2)
+        z = bbox[0][2] + ((bbox[1][2] - bbox[0][2]) // 2)
+        return (x, y, z)
 
 texNumber = 0
 
@@ -361,5 +382,25 @@ class Model3D:
         self.textures = []
         self.hasTrianglesWithoutATexture = False
         self.bspTree = BspTree()
+        self.bbox = None
 
+    def get_bounding_box(self):
+        if self.bbox != None:
+            return self.bbox
+
+        maxPos = [-999999, -999999, -999999]
+        minPos = [999999, 999999, 999999]
+
+        for segment in self.segments:
+            segBox = segment.get_bounding_box()
+            minPos[0] = min(minPos[0], segBox[0][0])
+            minPos[1] = min(minPos[1], segBox[0][1])
+            minPos[2] = min(minPos[2], segBox[0][2])
+            maxPos[0] = max(maxPos[0], segBox[1][0])
+            maxPos[1] = max(maxPos[1], segBox[1][1])
+            maxPos[2] = max(maxPos[2], segBox[1][2])
+
+        self.bbox = (minPos, maxPos)
+
+        return self.bbox
 

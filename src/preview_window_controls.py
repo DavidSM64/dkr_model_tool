@@ -9,7 +9,7 @@ class Vec3:
         self.z = z
 
     def __str__(self):
-        return '(' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')'
+        return '(' + str(int(self.x)) + ', ' + str(int(self.y)) + ', ' + str(int(self.z)) + ')'
 
     def __repr__(self):
         return self.__str__()
@@ -19,12 +19,14 @@ CONTROL_FLAG_BACKWARD        = 1 << 1
 CONTROL_FLAG_LEFT            = 1 << 2
 CONTROL_FLAG_RIGHT           = 1 << 3
 CONTROL_FLAG_ROTATING_CAMERA = 1 << 4
+CONTROL_FLAG_DEBUG           = 1 << 31
 
 KEY_TO_FLAG = {
     Qt.Key_W: CONTROL_FLAG_FORWARD,
     Qt.Key_S: CONTROL_FLAG_BACKWARD,
     Qt.Key_A: CONTROL_FLAG_LEFT,
     Qt.Key_D: CONTROL_FLAG_RIGHT,
+    Qt.Key_P: CONTROL_FLAG_DEBUG
 }
 
 MOUSE_TO_FLAG = {
@@ -83,6 +85,20 @@ class DkrPreviewControls():
 
     def update(self):
         self.check_active()
+
+    def set_cam_position(self, x, y, z, tx=None, ty=None, tz=None):
+        self.cameraPos.x = x
+        self.cameraPos.y = y
+        self.cameraPos.z = z
+        if tx != None and ty != None and tz != None:
+            self.targetPos.x = tx
+            self.targetPos.y = ty
+            self.targetPos.z = tz
+            self.set_cam_angle_from_target()
+        else:
+            self.update_target_pos()
+        self.forceUpdate = True
+        self.update()
 
     def set_cam_angle_from_target(self):
         xDiff = self.targetPos.x - self.cameraPos.x

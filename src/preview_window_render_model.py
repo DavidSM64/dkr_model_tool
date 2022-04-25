@@ -1,5 +1,6 @@
 from OpenGL.GLU import *
 from OpenGL.GL import *
+import colorsys
 import numpy
 
 # TODO: Switch from immediate rendering to using VBO + Shaders
@@ -7,6 +8,7 @@ import numpy
 class PreviewRenderModelSegment:
     def __init__(self, segment, textures):
         self.segment = segment
+
         self.list = glGenLists(1)
         glNewList(self.list, GL_COMPILE)
         self._compile_list(textures)
@@ -85,4 +87,6 @@ class PreviewRenderModel:
     def render(self):
         for renderSegment in self.renderSegments:
             renderSegment.render()
+
+
 

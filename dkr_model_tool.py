@@ -17,11 +17,11 @@ def load_model(args):
     if lowerPath.endswith(OBJ_EXTENSIONS):
         return import_obj_model(args)
     elif lowerPath.endswith(LEVEL_BINARY_EXTENSIONS):
-        return import_dkr_level_binary(args.input)
-    raise SystemExit('Invalid file path "' + path + '"; must end with .obj, .bin, or .cbin')
+        return import_dkr_level_binary(args)
+    raise SystemExit('Invalid file path "' + lowerPath + '"; must end with .obj, .bin, or .cbin')
 
 def preview_model(args):
-    preview_level(load_model(args.input))
+    preview_level(load_model(args))
 
 def convert_model(args):
     model = load_model(args)
@@ -38,8 +38,10 @@ def main():
     parser.add_argument('input', help='Input file path')
     parser.add_argument('-o', '--output', help='Output file path', required=False)
     parser.add_argument('-s', '--scale', type=int, default=1, help='How many blender units makes 1 ingame unit. Default is 1', required=False)
+    parser.add_argument('-a', '--autosplit', type=int, default=0, help='Automatically splits a model into a number of segments. Value must be >= 2', required=False)
 
     args = parser.parse_args()
+    print(args)
     if args.output == None:
         preview_model(args)
     else:

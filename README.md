@@ -11,11 +11,12 @@ I'm not sure of the minimum version of python you need, but for reference I use 
 ### Packages
 
 * Pillow - For loading images
+* glfw - For creating a hidden opengl window; needed to generate the bitfields for segments.
 * PyOpenGL - For the preview window
 * PyQt5 - For the preview window
 * numpy - For the preview window
 
-`pip install Pillow PyOpenGL PyQt5 numpy`
+`pip install Pillow PyOpenGL PyQt5 numpy glfw`
 
 ## Converting
 

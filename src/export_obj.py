@@ -62,7 +62,10 @@ def export_geometry_with_materials(model, objName, basePath, mtlPath, scale, exp
         objTxt += bspTextRef[0]
         objTxt += special_cmd('bsp_tree_end')
         for i in range(0, len(model.segments)):
-            objTxt += special_cmd('segment_mask', hex(model.bspTree.bitfields[i]))
+            try:
+                objTxt += special_cmd('segment_mask', hex(model.bspTree.bitfields[i]))
+            except IndexError:
+                pass
     else:
         # Write blank bsp tree and segment mask.
         objTxt += special_cmd('bsp_tree_start')

@@ -1,6 +1,7 @@
 import os.path
 from model import *
 from PIL import Image, ImageOps
+from model_split import auto_split_model
 
 def split_obj_line(line):
     if line.startswith('#!dkr'):
@@ -206,4 +207,6 @@ def import_obj_model(args):
             # Unknown command
             else:
                 print('Unimplemented command: ' + objCmd)
+    if args.autosplit >= 2:
+        return auto_split_model(model, args.autosplit)
     return model
