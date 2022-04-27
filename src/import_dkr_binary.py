@@ -2,6 +2,7 @@ from model import *
 from util import *
 import math
 from PIL import Image, ImageOps
+from segment_bitfield_generator import calculate_segment_bitfields
 
 def get_uv(data, offset):
     u = get_s16(data, offset)
@@ -27,8 +28,8 @@ def parse_bsp_tree(data, startOffset, i):
     return BspTreeNode(splitAxis, splitValue, segment, leftIndex, left, rightIndex, right)
 
 
-def import_dkr_level_binary(binaryPath):
-    data = list(open(binaryPath, 'rb').read())
+def import_dkr_level_binary(args):
+    data = list(open(args.input, 'rb').read())
     model = Model3D()
 
     texturesOffset  = get_u32(data, 0x00)
@@ -107,8 +108,10 @@ def import_dkr_level_binary(binaryPath):
             segment.batches.append(Model3DBatch(texIndex, batchFlags, batchVertIndex, batchNumVerts, batchTriIndex, batchNumTris))
         model.segments.append(segment)
     if numSegments > 1:
-        numBytesForBitfield = math.ceil(numSegments / 8)
-        for i in range(0, numSegments):
-            model.bspTree.bitfields.append(get_bitfield(data, bitfieldsOffset + (i * numBytesForBitfield), numBytesForBitfield))
+        #numBytesForBitfield = math.ceil(numSegments / 8)
+        #for i in range(0, numSegments):
+        #    model.bspTree.bitfields.append(get_bitfield(data, bitfieldsOffset + (i * numBytesForBitfield), numBytesForBitfield))
+        if args.output != None: # Ignoring for preview, since calculating bitfields is slow.
+            calculate_segment_bitfields(model)
         model.bspTree.rootNode = parse_bsp_tree(data, bspTreeOffset, 0)
     return model
