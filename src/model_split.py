@@ -199,6 +199,20 @@ def auto_split_model(model, numberOfSegments):
     splits["root"] = split_segment_equally(segmentBoundingBoxes, SegmentAABB(minX, minY, minZ, maxX, maxY, maxZ), numberOfSegments, [1])
     return split_model(model, splits, segmentBoundingBoxes)
 
+def manually_split_model(model, splitJsonPath):
+    modelAABB = model.get_bounding_box()
+    minX = modelAABB[0][0]
+    minY = modelAABB[0][1]
+    minZ = modelAABB[0][2]
+    maxX = modelAABB[1][0]
+    maxY = modelAABB[1][1]
+    maxZ = modelAABB[1][2]
+    segmentBoundingBoxes = []
+    splits = json.loads(open(splitJsonPath, 'r').read())
+    split_segment(segmentBoundingBoxes, SegmentAABB(minX, minY, minZ, maxX, maxY, maxZ), [1], splits["root"])
+    return split_model(model, splits, segmentBoundingBoxes)
+
+
 # -------- Test -------- #
 
 if __name__ == '__main__':

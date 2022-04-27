@@ -161,8 +161,11 @@ class Vertex:
             return False
         return self.x == other.x and self.y == other.y and self.z == other.z
 
-    def __repr__(self):
+    def __str__(self):
         return '(' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')'
+
+    def __repr__(self):
+        return self.__str__()
 
 # Currently known triangle flags
 TRIANGLE_FLAG_RENDER_BACKFACE = 0x40
@@ -341,6 +344,10 @@ class Model3DSegment:
         z = bbox[0][2] + ((bbox[1][2] - bbox[0][2]) // 2)
         return (x, y, z)
 
+    def is_point_within_bbox(self, x, y, z):
+        bbox = self.get_bounding_box()
+        return (x >= bbox[0][0] and x < bbox[1][0]) and (y >= bbox[0][1] and y < bbox[1][1]) and (z >= bbox[0][2] and z < bbox[1][2])
+
 texNumber = 0
 
 class TextureNode:
@@ -370,6 +377,13 @@ class BspTreeNode:
         self.left = left
         self.rightIndex = rightIndex
         self.right = right
+    
+    def __str__(self):
+        return '{ axis: ' + self.splitAxis + ', value: ' + str(self.splitValue) \
+            + ', left: ' + str(self.left) + ', right: ' + str(self.right) + ' }'
+
+    def __repr__(self):
+        return self.__str__()
 
 class BspTree:
     def __init__(self):
