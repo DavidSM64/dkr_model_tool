@@ -20,7 +20,15 @@ I'm not sure of the minimum version of python you need, but for reference I use 
 
 ## Converting
 
+Basic conversion:
+
 `python dkr_model_tool.py <import file path> -o <export file path>`
+
+### Options
+
+* `-s <Scale Factor>` or `--scale <Scale Factor>`: Scales model on all 3 axises by a certain amount.
+* `-a <Segment Count>` or `--autosplit <Segment Count>`: Splits a model up into segments for more efficient rendering. Note: This option splits the model in half recursively, so it won't be the most efficient option.
+* `-m <Split JSON filepath>` or `--manualsplit <Split JSON filepath>`: Splits a model based on binary tree structure in a JSON file. The JSON file should look something like this: https://pastebin.com/raw/dvimevCS. `value` should be in the signed 16-bit integer range (-32768 to +32767), and `axis` should either be `X`, `Y`, or `Z`.
 
 ### Supported import file formats
 
