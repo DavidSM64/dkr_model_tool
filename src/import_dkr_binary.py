@@ -1,4 +1,4 @@
-from model import *
+from level_model import *
 from util import *
 import math
 from PIL import Image, ImageOps
@@ -30,7 +30,7 @@ def parse_bsp_tree(data, startOffset, i):
 
 def import_dkr_level_binary(args):
     data = list(open(args.input, 'rb').read())
-    model = Model3D()
+    model = LevelModel3D()
 
     texturesOffset  = get_u32(data, 0x00)
     segmentsOffset  = get_u32(data, 0x04)
@@ -59,7 +59,7 @@ def import_dkr_level_binary(args):
             tex = generate_temporary_texture(width, height, format & 0x7F)
         model.textures.append(TextureNode(tex, width, height, format, collisionType, originalTexIndex))
     for i in range(0, numSegments):
-        segment = Model3DSegment()
+        segment = LevelModel3DSegment()
         segOffset = segmentsOffset + (i * SIZE_OF_SEGMENT)
         numVertices  = get_u16(data, segOffset + 0x1C)
         numTriangles = get_u16(data, segOffset + 0x1E)

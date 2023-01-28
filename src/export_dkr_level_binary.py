@@ -1,4 +1,4 @@
-from model import *
+from level_model import *
 import math
 
 def write8(data, offset, val):

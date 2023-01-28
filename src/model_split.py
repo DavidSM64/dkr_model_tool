@@ -1,4 +1,4 @@
-from model import *
+from level_model import *
 import json
 from sutherlandhodgman import clip_AABB
 from numpy import array, copy, cross, divide, multiply, dot, sqrt as numpy_sqrt
@@ -166,10 +166,10 @@ def get_bsp_node(splitDataNode, index):
 # Returns a new version of the model that is split up into segments.
 def split_model(model, splitData, segmentBoundingBoxes):
     trianglesData = _get_triangles_data(model)
-    newModel = Model3D()
+    newModel = LevelModel3D()
     newModel.textures = model.textures
     for bb in segmentBoundingBoxes:
-        newSegment = Model3DSegment()
+        newSegment = LevelModel3DSegment()
         for tri in trianglesData:
             verts = clip_AABB(copy(tri.verts), bb.min, bb.max)
             if len(verts) >= 3:

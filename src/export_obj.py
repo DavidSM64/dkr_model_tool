@@ -1,5 +1,4 @@
 from pathlib import Path
-from model import *
 
 def special_cmd(cmd, value=None):
     if value == None:

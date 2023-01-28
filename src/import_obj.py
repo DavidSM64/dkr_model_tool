@@ -1,5 +1,6 @@
 import os.path
 from model import *
+from level_model import *
 from PIL import Image, ImageOps
 from model_split import auto_split_model, manually_split_model
 
@@ -75,12 +76,12 @@ DEFAULT_BATCH_FLAGS = 0x10
 DEFAULT_TRIANGLE_FLAGS = 0x00
 
 def import_obj_model(args):
-    model = Model3D()
+    model = LevelModel3D()
 
     objText = open(args.input, "r").read().split("\n")
 
     # There is at-least a single segment
-    model.segments.append(Model3DSegment())
+    model.segments.append(LevelModel3DSegment())
 
     setSegmentCount = False
     currentSegment = 0
@@ -176,7 +177,7 @@ def import_obj_model(args):
                 setSegmentCount = True
                 segCount = int(parts[1])
                 while len(model.segments) < segCount:
-                    model.segments.append(Model3DSegment())
+                    model.segments.append(LevelModel3DSegment())
             elif objCmd == 'bsp_tree_start':
                 bspNodes = []
             elif objCmd == 'bsp_tree_node':

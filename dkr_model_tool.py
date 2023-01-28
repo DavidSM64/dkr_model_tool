@@ -13,6 +13,8 @@ sys.path.insert(0,'..')
 OBJ_EXTENSIONS = '.obj'
 LEVEL_BINARY_EXTENSIONS = ('.bin', '.cbin')
 
+MODEL_TYPES = [ "LEVEL", "OBJECT" ]
+
 def load_model(args):
     lowerPath = args.input.lower()
     if lowerPath.endswith(OBJ_EXTENSIONS):
@@ -25,6 +27,8 @@ def preview_model(args):
     preview_level(load_model(args))
 
 def convert_model(args):
+    if args.type == 'OBJECT':
+        raise SystemExit('Sorry! Object model conversion is currently not supported.')
     model = load_model(args)
     lowerPath = args.output.lower()
     print('Level scale set to ' +str(args.scale))
@@ -42,6 +46,7 @@ def main():
     parser.add_argument('-s', '--scale', type=int, default=1, help='How many blender units makes 1 ingame unit. Default is 1', required=False)
     parser.add_argument('-a', '--autosplit', type=int, default=0, help='Automatically splits a model into a number of segments. Value must be >= 2', required=False)
     parser.add_argument('-m', '--manualsplit', default=None, help='Splits a model by a tree defined from a JSON file. Must be a path to a JSON file.', required=False)
+    parser.add_argument('-t', '--type',type=str, choices=MODEL_TYPES, default="LEVEL", help='Which model type to use.', required=False)
     args = parser.parse_args()
 
     if args.autosplit > 0 and args.manualsplit != None:
